@@ -57,11 +57,11 @@
 
                     <mentio-menu
                                 mentio-for="'htmlContent'"
-                                mentio-trigger-char="'@'"
+                                mentio-trigger-char="@"
                                 mentio-items="people"
                                 mentio-template-url="/people-mentions.tpl"
-                                mentio-search="searchPeople(term)"
-                                mentio-select="getPeopleText(item)"
+                                mentio-search="searchPeople(scope,term)"
+                                mentio-select="getPeopleText(scope,item)"
                                 ></mentio-menu>
 
                     <div class="form-group">
@@ -69,11 +69,11 @@
                         <textarea mentio
 
                                 mentio-macros="macros"
-                                mentio-trigger-char="'@'"
+                                mentio-trigger-char="@"
                                 mentio-items="people"
                                 mentio-template-url="/people-mentions.tpl"
-                                mentio-search="searchPeople(term)"
-                                mentio-select="getPeopleTextRaw(item)"
+                                mentio-search="searchPeople(scope,term)"
+                                mentio-select="getPeopleTextRaw(scope,item)"
                                 mentio-typed-term="typedTerm2"
 
                                 class="editor form-control"
@@ -88,11 +88,11 @@
                     <mentio-menu
 
                                 mentio-for="'theTextArea'"
-                                mentio-trigger-char="'#'"
+                                mentio-trigger-char="#"
                                 mentio-items="products"
                                 mentio-template-url="/product-mentions.tpl"
-                                mentio-search="searchProducts(term)"
-                                mentio-select="getProductTextRaw(item)"></mentio-menu>
+                                mentio-search="searchProducts(scope,term)"
+                                mentio-select="getProductTextRaw(scope,item)"></mentio-menu>
 
                     <div class="form-group">
                         <h3>Text Input:</h3>
@@ -109,18 +109,18 @@
 
                     <mentio-menu
                                 mentio-for="'theText' + myIndexValue"
-                                mentio-trigger-char="'#'"
+                                mentio-trigger-char="#"
                                 mentio-items="products"
                                 mentio-template-url="/product-mentions.tpl"
-                                mentio-search="searchProducts(term)"
-                                mentio-select="getProductTextRaw(item)"></mentio-menu>
+                                mentio-search="searchProducts(scope,term)"
+                                mentio-select="getProductTextRaw(scope,item)"></mentio-menu>
                     <mentio-menu
                                 mentio-for="'theText' + myIndexValue"
-                                mentio-trigger-char="'@'"
+                                mentio-trigger-char="@"
                                 mentio-items="people"
                                 mentio-template-url="/people-mentions.tpl"
-                                mentio-search="searchPeople(term)"
-                                mentio-select="getPeopleTextRaw(item)"></mentio-menu>
+                                mentio-search="searchPeople(scope,term)"
+                                mentio-select="getPeopleTextRaw(scope,item)"></mentio-menu>
 
 
                     <div class="form-group">
@@ -149,7 +149,7 @@
 
     <script type="text/ng-template" id="/product-mentions.tpl">
         <ul class="list-group product-search demo-scrollable-menu">
-            <li mentio-menu-item="product" ng-repeat="product in items" class="list-group-item clearfix">
+            <li mentio-menu-item="product" ng-repeat="product in filteredItems" class="list-group-item clearfix">
                 <div class="row">
                     <div class="col-xs-2 text-center">
                         <img ng-src="{{product.imageUrl}}" class="product-photo">
@@ -165,7 +165,7 @@
 
     <script type="text/ng-template" id="/people-mentions.tpl">
         <ul class="list-group user-search">
-            <li mentio-menu-item="person" ng-repeat="person in items" class="list-group-item">
+            <li mentio-menu-item="person" ng-repeat="person in filteredItems" class="list-group-item">
                 <img ng-src="{{person.imageUrl}}" class="user-photo">
                 <span class="text-primary" ng-bind-html="person.name | mentioHighlight:typedTerm:'menu-highlighted' | unsafe"></span>
                 <em class="text-muted" ng-bind="person.bio | words:5"></em>

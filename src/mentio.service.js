@@ -1,3 +1,4 @@
+// vim:ai:tw=2:ts=2:sw=4:et:sts=4
 'use strict';
 
 angular.module('mentio')
@@ -545,6 +546,21 @@ angular.module('mentio')
             return coordinates;
         }
 
+
+        function defaultSearch(args) {
+            var results = [];
+            angular.forEach(args.scope.items, function(item) {
+                if (item.label.toUpperCase().indexOf(args.term.toUpperCase()) >= 0) {
+                    results.push(item);
+                }
+            });
+            return results;
+        }
+
+        function defaultSelect(args) {
+            return args.scope.triggerChar + args.item.label;
+        }
+
         return {
             // public
             popUnderMention: popUnderMention,
@@ -553,9 +569,8 @@ angular.module('mentio')
             getMacroMatch: getMacroMatch,
             getTriggerInfo: getTriggerInfo,
             selectElement: selectElement,
-
-
-
+            defaultSearch: defaultSearch,
+            defaultSelect: defaultSelect,
 
             // private: for unit testing only
             getTextAreaOrInputUnderlinePosition: getTextAreaOrInputUnderlinePosition,

@@ -1,11 +1,12 @@
 {
-  "name": "ment.io",
+  "name": "shotty-ment.io",
   "main": "dist/mentio.js",
-  "version": "0.9.24",
-  "homepage": "https://github.com/jeff-collins/ment.io",
+  "version": "0.1.0-shotty",
+  "homepage": "https://github.com/ProgDevel/ment.io",
   "authors": [
     "jeff-collins <i.am.jeff.collins@gmail.com>",
-    "adamayres <magicaj@gmail.com>"
+    "adamayres <magicaj@gmail.com>",
+    "prog.devel <prog.devel@gmail.com"
   ],
   "description": "Mentions for Angular",
   "keywords": [
@@ -25,5 +26,8 @@
     "angular": "~1.2.18",
     "angular-mocks": "~1.2.18",
     "angular-ui-tinymce": "latest"
+  },
+  "resolutions": {
+    "angular": "~1.2.18"
   }
 }

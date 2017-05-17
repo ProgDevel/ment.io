@@ -1,6 +1,6 @@
 {
-  "name": "ment.io",
-  "version": "0.9.24",
+  "name": "shotty-ment.io",
+  "version": "0.1.0-shotty",
   "description": "Mentions for Angular",
   "main": "dist/mentio.js",
   "scripts": {
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/jeff-collins/ment.io.git"
+    "url": "https://github.com/ProgDevel/ment.io.git"
   },
   "keywords": [
     "angular",
@@ -21,7 +21,7 @@
   "bugs": {
     "url": "https://github.com/jeff-collins/ment.io/issues"
   },
-  "homepage": "https://github.com/jeff-collins/ment.io",
+  "homepage": "https://github.com/ProgDevel/ment.io",
   "devDependencies": {
     "connect-livereload": "^0.4.0",
     "express": "^4.1.2",

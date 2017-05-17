@@ -48,7 +48,7 @@ angular.module('mentio-demo', ['mentio', 'ngRoute', 'ui.tinymce'])
         // shows the use of dynamic values in mentio-id and mentio-for to link elements
         $scope.myIndexValue = "5";
 
-        $scope.searchProducts = function(term) {
+        $scope.searchProducts = function(scope,term) {
             var prodList = [];
 
             return $http.get('productdata.json').then(function (response) {
@@ -63,7 +63,7 @@ angular.module('mentio-demo', ['mentio', 'ngRoute', 'ui.tinymce'])
             });
         };
 
-        $scope.searchPeople = function(term) {
+        $scope.searchPeople = function(scope,term) {
             var peopleList = [];
             return $http.get('peopledata.json').then(function (response) {
                 angular.forEach(response.data, function(item) {
@@ -76,7 +76,7 @@ angular.module('mentio-demo', ['mentio', 'ngRoute', 'ui.tinymce'])
             });
         };
 
-        $scope.searchSimplePeople = function(term) {
+        $scope.searchSimplePeople = function(scope,term) {
             return $http.get('simplepeopledata.json').then(function (response) {
                 $scope.simplePeople = [];
                 angular.forEach(response.data, function(item) {
@@ -87,11 +87,11 @@ angular.module('mentio-demo', ['mentio', 'ngRoute', 'ui.tinymce'])
             });
         };
 
-        $scope.getProductText = function(item) {
+        $scope.getProductText = function(scope,item) {
             return '[~<strong>' + item.sku + '</strong>]';
         };
 
-        $scope.getProductTextRaw = function(item) {
+        $scope.getProductTextRaw = function(scope,item) {
             var deferred = $q.defer();
             /* the select() function can also return a Promise which ment.io will handle
             propertly during replacement */
@@ -102,12 +102,12 @@ angular.module('mentio-demo', ['mentio', 'ngRoute', 'ui.tinymce'])
             return deferred.promise;
         };
 
-        $scope.getPeopleText = function(item) {
+        $scope.getPeopleText = function(scope,item) {
             // note item.label is sent when the typedText wasn't found
             return '[~<i>' + (item.name || item.label) + '</i>]';
         };
 
-        $scope.getPeopleTextRaw = function(item) {
+        $scope.getPeopleTextRaw = function(scope,item) {
             return '@' + item.name;
         };
 
@@ -133,7 +133,7 @@ angular.module('mentio-demo', ['mentio', 'ngRoute', 'ui.tinymce'])
  
         $scope.theTextArea = 'Type an # and some text';
         $scope.theTextArea2 = 'Type an @';
-        $scope.searchSimplePeople('');
+        $scope.searchSimplePeople($scope, '');
         $scope.resetDemo();
     })
 

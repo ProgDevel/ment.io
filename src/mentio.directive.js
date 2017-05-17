@@ -1,3 +1,4 @@
+// vim:ai:tw=2:ts=2:sw=4:et:sts=4
 'use strict';
 
 angular.module('mentio', [])
@@ -10,6 +11,7 @@ angular.module('mentio', [])
                 search: '&mentioSearch',
                 select: '&mentioSelect',
                 items: '=mentioItems',
+                triggerChar: '@mentioTriggerChar',
                 typedTerm: '=mentioTypedTerm',
                 altId: '=mentioId',
                 iframeElement: '=mentioIframeElement',
@@ -18,7 +20,37 @@ angular.module('mentio', [])
                 trimTerm: '=mentioTrimTerm',
                 ngModel: '='
             },
-            controller: function($scope, $timeout, $attrs) {
+
+            controller: function($scope, $element, $attrs) {
+                this.addMenu = function (menuScope, menuAttrs) {
+                    // TODO refactor this cycling
+                    menuScope.targetScope = $scope;
+
+                    var html = '<mentio-menu mentio-items="' + menuAttrs.items + '"';
+
+                    if (menuAttrs.search) {
+                        html = html + ' mentio-search="' + menuAttrs.search + '"';
+                    }
+
+                    if (menuAttrs.select) {
+                        html = html + ' mentio-select="' + menuAttrs.select + '"';
+                    }
+
+                    if (menuAttrs.templateUrl) {
+                        html = html + ' mentio-template-url="' + menuAttrs.templateUrl + '"';
+                    }
+
+                    html = html + ' mentio-trigger-char="' + menuAttrs.triggerChar + '"' +
+                        ' mentio-parent-scope="targetScope"' +
+                        '/>';
+
+                    var el = $compile(html)(menuScope);
+                    $element.parent().append(el);
+
+                    menuScope.$on('$destroy', function() {
+                        el.remove();
+                    });
+                };
 
                 $scope.query = function (triggerChar, triggerText) {
                     var remoteScope = $scope.triggerCharMap[triggerChar];
@@ -27,41 +59,7 @@ angular.module('mentio', [])
                         triggerText = triggerText.trim();
                     }
 
-                    remoteScope.showMenu();
-
-                    remoteScope.search({
-                        term: triggerText
-                    });
-
-                    remoteScope.typedTerm = triggerText;
-                };
-
-                $scope.defaultSearch = function(locals) {
-                    var results = [];
-                    angular.forEach($scope.items, function(item) {
-                        if (item.label.toUpperCase().indexOf(locals.term.toUpperCase()) >= 0) {
-                            results.push(item);
-                        }
-                    });
-                    $scope.localItems = results;
-                };
-
-                $scope.bridgeSearch = function(termString) {
-                    var searchFn = $attrs.mentioSearch ? $scope.search : $scope.defaultSearch;
-                    searchFn({
-                        term: termString
-                    });
-                };
-
-                $scope.defaultSelect = function(locals) {
-                    return $scope.defaultTriggerChar + locals.item.label;
-                };
-
-                $scope.bridgeSelect = function(itemVar) {
-                    var selectFn = $attrs.mentioSelect ? $scope.select : $scope.defaultSelect;
-                    return selectFn({
-                        item: itemVar
-                    });
+                    remoteScope.query(triggerText);
                 };
 
                 $scope.setTriggerText = function(text) {
@@ -162,7 +160,7 @@ angular.module('mentio', [])
                 };
 
                 $scope.addMenu = function(menuScope) {
-                    if (menuScope.parentScope && $scope.triggerCharMap.hasOwnProperty(menuScope.triggerChar)) {
+                    if (menuScope.targetScope && $scope.triggerCharMap.hasOwnProperty(menuScope.triggerChar)) {
                         return;
                     }
                     $scope.triggerCharMap[menuScope.triggerChar] = menuScope;
@@ -243,37 +241,20 @@ angular.module('mentio', [])
                     }
                 );
             },
-            link: function (scope, element, attrs) {
+
+            link: function (scope, element, attrs, ctl) {
                 scope.triggerCharMap = {};
 
                 scope.targetElement = element;
                 attrs.$set('autocomplete','off');
 
                 if (attrs.mentioItems) {
-                    scope.localItems = [];
-                    scope.parentScope = scope;
-                    var itemsRef = attrs.mentioSearch ? ' mentio-items="items"' : ' mentio-items="localItems"';
-
-                    scope.defaultTriggerChar = attrs.mentioTriggerChar ? scope.$eval(attrs.mentioTriggerChar) : '@';
-
-                    var html = '<mentio-menu' +
-                        ' mentio-search="bridgeSearch(term)"' +
-                        ' mentio-select="bridgeSelect(item)"' +
-                        itemsRef;
-
-                    if (attrs.mentioTemplateUrl) {
-                        html = html + ' mentio-template-url="' + attrs.mentioTemplateUrl + '"';
-                    }
-                    html = html + ' mentio-trigger-char="\'' + scope.defaultTriggerChar + '\'"' +
-                        ' mentio-parent-scope="parentScope"' +
-                        '/>';
-                    var linkFn = $compile(html);
-                    var el = linkFn(scope);
-
-                    element.parent().append(el);
-
-                    scope.$on('$destroy', function() {
-                      el.remove();
+                    ctl.addMenu(scope, {
+                      items: 'items',
+                      search: attrs.mentioSearch ? 'search(scope,term)' : undefined,
+                      select: attrs.mentioSelect ? 'select(scope,item)' : undefined,
+                      triggerChar: attrs.mentioTriggerChar ? attrs.mentioTriggerChar : '@',
+                      templateUrl: attrs.mentioTemplateUrl
                     });
                 }
 
@@ -436,7 +417,8 @@ angular.module('mentio', [])
                                 if (lastScope) {
                                     // just came out of typeahead state
                                     var text = lastScope.select({
-                                        item: {label: currentTypedTerm}
+                                        item: {label: currentTypedTerm},
+                                        scope: lastScope
                                     });
                                     if (typeof text.then === 'function') {
                                         /* text is a promise, at least our best guess */
@@ -461,13 +443,15 @@ angular.module('mentio', [])
                 search: '&mentioSearch',
                 select: '&mentioSelect',
                 items: '=mentioItems',
-                triggerChar: '=mentioTriggerChar',
+                triggerChar: '@mentioTriggerChar',
                 forElem: '=mentioFor',
-                parentScope: '=mentioParentScope'
+                targetScope: '=mentioParentScope'
             },
+
             templateUrl: function(tElement, tAttrs) {
                 return tAttrs.mentioTemplateUrl !== undefined ? tAttrs.mentioTemplateUrl : 'mentio-menu.tpl.html';
             },
+
             controller: function ($scope) {
                 $scope.visible = false;
 
@@ -483,9 +467,7 @@ angular.module('mentio', [])
 
                 // callable both with controller (menuItem) and without controller (local)
                 this.selectItem = $scope.selectItem = function (item) {
-                    var text = $scope.select({
-                        item: item
-                    });
+                    var text = $scope.select({ item: item, scope: $scope });
                     if (typeof text.then === 'function') {
                         /* text is a promise, at least our best guess */
                         text.then($scope.parentMentio.replaceText);
@@ -524,25 +506,37 @@ angular.module('mentio', [])
                     return $scope.visible;
                 };
 
-                $scope.showMenu = function () {
+                $scope.query = function (term) {
                     if (!$scope.visible) {
                         $scope.requestVisiblePendingSearch = true;
                     }
+
+                    var searchRet = $scope.search({term: term, scope: $scope});
+                    if (searchRet && searchRet.then) {
+                        searchRet.then(function(ret) { $scope.filteredItems = ret; })
+                    }
+                    else {
+                        $scope.filteredItems = searchRet;
+                    }
+
+                    $scope.typedTerm = term;
                 };
 
                 $scope.setParent = function (scope) {
                     $scope.parentMentio = scope;
                     $scope.targetElement = scope.targetElement;
                 };
+
+              $scope.filteredItems = [];
             },
 
-            link: function (scope, element) {
+            link: function (scope, element, attrs) {
                 element[0].parentNode.removeChild(element[0]);
                 $document[0].body.appendChild(element[0]);
                 scope.menuElement = element; // for testing
 
-                if (scope.parentScope) {
-                    scope.parentScope.addMenu(scope);
+                if (scope.targetScope) {
+                    scope.targetScope.addMenu(scope);
                 } else {
                     if (!scope.forElem) {
                         $log.error('mentio-menu requires a target element in tbe mentio-for attribute');
@@ -561,6 +555,9 @@ angular.module('mentio', [])
                         });
                 }
 
+                if (!attrs.mentioSearch) { scope.search = mentioUtil.defaultSearch; }
+                if (!attrs.mentioSelect) { scope.select = mentioUtil.defaultSelect; }
+
                 angular.element($window).bind(
                     'resize', function () {
                         if (scope.isVisible()) {
@@ -572,7 +569,7 @@ angular.module('mentio', [])
                     }
                 );
 
-                scope.$watch('items', function (items) {
+                scope.$watch('filteredItems', function (items) {
                     if (items && items.length > 0) {
                         scope.activate(items[0]);
                         if (!scope.visible && scope.requestVisiblePendingSearch) {
@@ -658,11 +655,13 @@ angular.module('mentio', [])
             }
         };
     })
+
     .filter('unsafe', function($sce) {
         return function (val) {
             return $sce.trustAsHtml(val);
         };
     })
+
     .filter('mentioHighlight', function() {
         function escapeRegexp (queryToEscape) {
             return queryToEscape.replace(/([.?*+^$[\]\\(){}|-])/g, '\\$1');
